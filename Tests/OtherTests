@@ -31,3 +31,157 @@ The Concept: The payload sits inline with a shared office printer. It silently f
 The Use Case: This is a classic penetration testing extraction method. At the end of the day, you can retrieve the USB drive, parse the captured .pcap files, and easily reconstruct exact PDF copies of everything that was printed on that machine—invoices, HR documents, or strategic plans.
 
 Do any of these fresh angles sound like the kind of project you want to build out? I can write up the exact script and configuration for whichever one catches your eye.
+
+
+Here are the fully fleshed-out scripts for those four unconventional concepts. These step completely outside standard IT tasks and turn your Packet Squirrel into a tool for chaos, cryptography, and productivity.
+
+1. The "Network Glitch Art" Generator
+Instead of writing a complex Python proxy, we can use Linux's built-in Traffic Control (tc) system. This script tells the Squirrel's networking kernel to intentionally introduce microscopic data corruption (flipping random bits) in the packets passing through it. When downloading unencrypted media or loading certain data streams, this forces the receiving computer to render the corrupted bytes, creating beautiful, unpredictable visual glitches.
+
+Bash
+#!/bin/bash
+# Title:        Network Glitch Art
+# Description:  Intentionally corrupts 1% of network traffic to generate digital art.
+# Net Mode:     BRIDGE
+
+function run_glitch_art() {
+    NETMODE BRIDGE
+    sleep 10
+    
+    # Indicate armed state
+    LED SETUP
+    
+    # Wait for the button press to start the glitching
+    NO_LED=true BUTTON
+    
+    # Indicate the art generator is active (Blinking Purple)
+    LED M FAST
+    
+    # Flush any existing traffic control rules on the bridge
+    tc qdisc del dev br-lan root 2>/dev/null
+    
+    # The Magic: Introduce exactly 1% packet corruption
+    tc qdisc add dev br-lan root netem corrupt 1%
+    
+    # Wait for the second button press to stop
+    NO_LED=true BUTTON
+    
+    # Clean up the rules to restore normal internet
+    tc qdisc del dev br-lan root 2>/dev/null
+    LED G SUCCESS
+}
+
+USB_WAIT
+run_glitch_art &
+wait
+Note: Because modern web traffic is heavily encrypted (HTTPS), corrupted packets are usually just dropped and re-requested. This payload works best when browsing HTTP sites, playing older LAN games, or pulling raw video streams over UDP.
+
+2. The LAN Party "Chaos Engine"
+This is the ultimate digital prank or latency-testing tool. If you load this onto the USB drive using the switch1, switch2, and switch3 folder structure we discussed earlier, you can physically slide the switch to inject different levels of horrible internet into whatever is plugged into the Squirrel.
+
+(Paste this specific version into your switch2 folder to act as the "Lag Switch")
+
+Bash
+#!/bin/bash
+# Title:        Chaos Engine (Level 2: The Lag Switch)
+# Description:  Injects a horrible 250ms delay and 2% jitter into the connection.
+# Net Mode:     BRIDGE
+
+function run_chaos() {
+    NETMODE BRIDGE
+    sleep 10
+    
+    # Clear existing rules
+    tc qdisc del dev br-lan root 2>/dev/null
+    
+    # Inject a 250ms delay, with a random +/- 50ms jitter to make it unpredictable
+    tc qdisc add dev br-lan root netem delay 250ms 50ms
+    
+    # Solid Red LED so you know the chaos is active
+    LED R SOLID
+}
+
+USB_WAIT
+run_chaos &
+wait
+(To make a switch3 "Shredder" version, just change the tc line to: tc qdisc add dev br-lan root netem loss 10% to randomly drop 1 out of every 10 packets!)
+
+3. The Cryptographic "Entropy" Harvester
+This script doesn't care what the data is; it only cares about the chaotic, unpredictable microsecond timing of when packets hit the wire. It captures that network noise, hashes it using SHA-256, and appends it to a text file, giving you a stream of true, mathematically unpredictable random data.
+
+Bash
+#!/bin/bash
+# Title:        Entropy Harvester
+# Description:  Converts network noise into cryptographic randomness.
+# Net Mode:     BRIDGE
+
+function run_entropy() {
+    NETMODE BRIDGE
+    mkdir -p /usb/loot/entropy &> /dev/null
+    sleep 10
+    
+    LED ATTACK
+    
+    # 1. Run tcpdump in line-buffered mode (-l)
+    # 2. Pipe the raw output directly into a SHA-256 hashing algorithm
+    # 3. Cut out just the hash string and append it to our entropy file
+    tcpdump -i br-lan -l -n 2>/dev/null | stdbuf -oL sha256sum | awk '{print $1}' >> /usb/loot/entropy/true_random.txt &
+    tpid=$!
+    
+    # Wait for button press to stop harvesting
+    NO_LED=true BUTTON
+    kill $tpid
+    sync
+    LED G SUCCESS
+}
+
+USB_WAIT
+run_entropy &
+wait
+4. The Physical "Pomodoro" Focus Firewall
+This script uses Deep Packet Inspection (DPI) to look for specific domain names in the traffic. When you push the button, it physically blocks your computer from accessing known distraction sites for exactly 25 minutes. You cannot turn it off from your keyboard—you have to wait for the Squirrel's LED to turn green.
+
+Bash
+#!/bin/bash
+# Title:        Physical Pomodoro
+# Description:  Hardware-level distraction blocker for 25-minute focus sprints.
+# Net Mode:     BRIDGE
+
+function run_pomodoro() {
+    NETMODE BRIDGE
+    sleep 10
+    
+    while true; do
+        # Ready state
+        LED SETUP
+        
+        # Wait for user to push the button to start the focus sprint
+        NO_LED=true BUTTON
+        
+        # Focus Mode Active (Solid Red)
+        LED R SOLID
+        
+        # Insert iptables rules to drop traffic containing specific strings
+        iptables -I FORWARD -m string --algo bm --string "reddit.com" -j DROP
+        iptables -I FORWARD -m string --algo bm --string "youtube.com" -j DROP
+        iptables -I FORWARD -m string --algo bm --string "twitter.com" -j DROP
+        iptables -I FORWARD -m string --algo bm --string "facebook.com" -j DROP
+        
+        # Sleep for 25 minutes (1500 seconds)
+        sleep 1500
+        
+        # Break Time! (Solid Green)
+        LED G SUCCESS
+        
+        # Remove the firewall blocks so you can browse again
+        iptables -F FORWARD
+        
+        # 5 minute break (300 seconds) before resetting to the Ready state
+        sleep 300
+    done
+}
+
+USB_WAIT
+run_pomodoro &
+wait
+Which of these directions is the most interesting to you? Would you like to dive deeper into traffic manipulation (like routing traffic through Tor), or should we look at ways to trigger these payloads remotely using the Squirrel's Python capabilities?
