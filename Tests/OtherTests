@@ -1,0 +1,33 @@
+Let’s wipe the slate completely clean. If we step entirely away from building management and network mapping, we can look at the Packet Squirrel from a few completely different angles: as a travel companion, a privacy enforcer, and a data-extraction tool.
+
+Here are four completely fresh, out-of-the-box payload concepts for the Mark II:
+
+1. The "Hotel Stealth NAT" (Captive Portal Cloner)
+Hotel and resort networks are notoriously annoying. They limit how many devices you can connect, block certain gaming consoles, or charge per device for premium speeds.
+
+The Concept: A payload that runs in NAT mode instead of BRIDGE. You plug your laptop into the Squirrel, authenticate to the hotel's captive portal once, and then push the Squirrel's button. The script grabs your laptop's MAC address, clones it to its own external interface, and starts acting as a router.
+
+The Use Case: You can now plug a portable Wi-Fi access point or a simple switch into the Squirrel. All your devices—phones, tablets, and gaming consoles—can connect to the internet simultaneously, hidden behind the single approved MAC address. The hotel's network only sees "one" device.
+
+2. The IoT "Quarantine" Cable
+Cheap smart-home devices (like budget Wi-Fi cameras, smart plugs, or 3D printer network modules) are notorious for "phoning home" to overseas cloud servers, collecting telemetry, or posing security risks.
+
+The Concept: You drop the Squirrel inline between the sketchy device and your main network switch. The payload uses strict iptables rules to act as a one-way physical firewall. It explicitly drops all packets attempting to leave your local network (WAN traffic) but freely allows local traffic (LAN).
+
+The Use Case: You can confidently plug in a questionable, cloud-dependent piece of hardware knowing it is physically impossible for it to reach the internet, while still allowing it to talk locally to a localized management server like Home Assistant.
+
+3. The IP Camera "Shadow Recorder"
+In physical security setups, the network video recorder (NVR) is usually the single point of failure. If the NVR is tampered with or the hard drive fails, you lose the footage.
+
+The Concept: The Squirrel sits passively inline with a single, high-value PoE security camera. Using tcpdump, the payload specifically filters for RTSP (Real-Time Streaming Protocol) packets on port 554 and writes them to the USB drive in manageable chunks.
+
+The Use Case: It acts as an invisible, decentralized backup drive. The camera still sends video to the main NVR perfectly, but the Squirrel secretly keeps a rolling 24-hour backup of the raw video stream on its USB drive. If the main system goes down, you have a physical backup taped to the ethernet cable.
+
+4. The Printer Spool Sniffer
+Office printers are often the most overlooked security vulnerability in a building. Most workstations send documents to network printers completely unencrypted.
+
+The Concept: The payload sits inline with a shared office printer. It silently filters for Raw Print (Port 9100) or IPP (Internet Printing Protocol) traffic and saves the spool files to the USB drive.
+
+The Use Case: This is a classic penetration testing extraction method. At the end of the day, you can retrieve the USB drive, parse the captured .pcap files, and easily reconstruct exact PDF copies of everything that was printed on that machine—invoices, HR documents, or strategic plans.
+
+Do any of these fresh angles sound like the kind of project you want to build out? I can write up the exact script and configuration for whichever one catches your eye.
