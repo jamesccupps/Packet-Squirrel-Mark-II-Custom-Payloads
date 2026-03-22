@@ -1,0 +1,24 @@
+#!/bin/bash
+# Title:        SDN Interceptor
+# Description:  Sniffs UniFi STUN and Inform packets to map infrastructure.
+# Net Mode:     BRIDGE
+
+function run_sdn_sniff() {
+    NETMODE BRIDGE
+    mkdir -p /usb/loot/sdn_map &> /dev/null
+    sleep 5
+    
+    LED SETUP
+
+    # Filter for UniFi Inform (TCP 8080) and STUN (UDP 3478)
+    tcpdump -i br-lan -s 0 tcp port 8080 or udp port 3478 -w /usb/loot/sdn_map/unifi_telemetry_$(date +%Y%m%d).pcap &>/dev/null &
+    tpid=$!
+    
+    NO_LED=true BUTTON
+    kill $tpid
+    sync
+    LED G SUCCESS
+}
+
+USB_WAIT
+run_sdn_sniff &
