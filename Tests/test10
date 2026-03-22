@@ -1,0 +1,41 @@
+#!/bin/bash
+# Title:        OT Traffic Visualizer
+# Description:  Screenless LED monitor for BACnet, Modbus, and Broadcasts.
+# Net Mode:     BRIDGE
+
+function run_visualizer() {
+    NETMODE BRIDGE
+    sleep 10
+    
+    # Start with a baseline Green (All Good)
+    LED G SUCCESS
+
+    # Read tcpdump output line by line
+    tcpdump -i br-lan -l -n 2>/dev/null | while read line; do
+        
+        # Check for BACnet (UDP 47808)
+        if echo "$line" | grep -q "47808"; then
+            LED B FAST
+            sleep 1
+            LED G SUCCESS
+            
+        # Check for Modbus (TCP 502)
+        elif echo "$line" | grep -q "\.502 >\|> .*\.502"; then
+            LED M FAST
+            sleep 1
+            LED G SUCCESS
+            
+        # Check for heavy ARP requests (Orphaned devices looking for a host)
+        elif echo "$line" | grep -q "ARP, Request who-has"; then
+            # We don't want to flash red for a single ARP, only if there's a flood
+            # But for a quick visualizer, a brief Red flash works
+            LED R SOLID
+            sleep 0.5
+            LED G SUCCESS
+        fi
+    done
+}
+
+USB_WAIT
+run_visualizer &
+wait
