@@ -1,0 +1,70 @@
+#!/bin/bash
+# 
+# Title:        Optimized Hybrid Mapper
+# Description:  Smart-wait for IP, RAM caching, and speed-optimized stealth sweep.
+# Author:       Hak5 / Optimized
+# Net Mode:     BRIDGE
+
+function run_optimized_mapper() {
+    # 1. Set mode to BRIDGE
+    NETMODE BRIDGE
+    
+    # Indicate we are waiting for an IP (Blinking Yellow)
+    LED SETUP
+    
+    # 2. OPTIMIZATION: "Smart Wait" for an IP address
+    # We poll the interface every 2 seconds, up to 15 times (30 seconds max)
+    for i in {1..15}; do
+        IP_ADDR=$(ip addr show br-lan | grep -w inet | awk '{print $2}' | cut -d/ -f1)
+        if [ ! -z "$IP_ADDR" ]; then
+            # We got an IP! Break the loop immediately so we don't waste time.
+            break
+        fi
+        sleep 2
+    done
+
+    # If the loop finished and we STILL don't have an IP, abort safely.
+    if [ -z "$IP_ADDR" ]; then
+        LED FAIL
+        exit 1
+    fi
+
+    # 3. Setup the loot directory and log the IP for Sneakernet access
+    mkdir -p /usb/loot/nmap &> /dev/null
+    echo "$IP_ADDR" > /usb/loot/squirrel_ip.txt
+
+    # 4. Dynamically figure out the local subnet
+    SUBNET=$(ip route | grep br-lan | grep -v default | awk '{print $1}')
+
+    # 5. Execute the Scan
+    if [ ! -z "$SUBNET" ]; then
+        # Indicate active scanning (Solid Red)
+        LED ATTACK
+        
+        # OPTIMIZATION: RAM Caching definitions
+        TMP_FILE="/tmp/hybrid_scan.txt"
+        FINAL_FILE="/usb/loot/nmap/hybrid_scan_$(date +%Y-%m-%d-%H%M%S).txt"
+        
+        # OPTIMIZATION: Added -T4 to drastically speed up the Nmap timing engine
+        nmap -sn "$SUBNET" -T4 --spoof-mac Cisco -D RND:5 --randomize-hosts -oN "$TMP_FILE" &> /dev/null
+        
+        # Move the completed file from ultra-fast RAM to permanent USB storage
+        mv "$TMP_FILE" "$FINAL_FILE"
+        
+        # Force the filesystem to flush buffers so the USB is safe to unplug
+        sync
+        
+        # Scan complete (Solid Green)
+        LED G SUCCESS
+    else
+        # Failed to find the Subnet (Blinking Red)
+        LED FAIL
+    fi
+}
+
+# Wait for the USB drive to mount
+USB_WAIT
+
+# Start the routine
+run_optimized_mapper &
+wait
