@@ -1,7 +1,3 @@
-Let’s wipe the slate completely clean. If we step entirely away from building management and network mapping, we can look at the Packet Squirrel from a few completely different angles: as a travel companion, a privacy enforcer, and a data-extraction tool.
-
-Here are four completely fresh, out-of-the-box payload concepts for the Mark II:
-
 1. The "Hotel Stealth NAT" (Captive Portal Cloner)
 Hotel and resort networks are notoriously annoying. They limit how many devices you can connect, block certain gaming consoles, or charge per device for premium speeds.
 
