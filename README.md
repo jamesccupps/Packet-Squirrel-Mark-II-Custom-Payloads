@@ -4,6 +4,8 @@ A collection of 23 custom payloads for the [Hak5 Packet Squirrel Mark II](https:
 
 Each payload is fully standalone — just copy the `payload.sh` file to your Packet Squirrel's USB drive and go.
 
+> ⚠️ **Authorized use only.** These payloads perform packet capture, network scanning, credential interception, and traffic manipulation. Deploy them only on networks you own or have explicit written permission to test. See the [Disclaimer](#disclaimer) at the bottom of this document.
+
 ## Payloads
 
 ### Packet Capture
@@ -104,3 +106,7 @@ Most capture payloads save files to `/usb/loot/`. To retrieve them:
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+## Disclaimer
+
+These payloads are intended for authorized security testing, network research, and defensive monitoring on networks you own or have explicit written permission to test. Many of these tools — including credential sieves, honeypots, packet capture, traffic manipulation, and protocol fuzzing — perform actions that may be illegal when used without authorization. Unauthorized interception of network communications may violate federal and state wiretap laws (including 18 U.S.C. § 2511 in the United States) as well as computer fraud and abuse statutes. The OT/building-automation payloads can interact with live industrial control systems; do not deploy them on production BAS/ICS networks without coordination with the system owner and operator. You are solely responsible for how you use this software. The author assumes no liability for misuse or damages.
